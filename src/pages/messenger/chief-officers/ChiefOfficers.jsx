@@ -14,11 +14,11 @@ const ChiefOfficers = () => {
       description: "The Master Coordinator of Operations. Unifies all departments under one strategy, ensuring flawless execution across the company.Balances vision with discipline, transforming plans into results and systems into momentum.The bridge between high command and frontline execution."},
     "CMO": {
       title: "Chief Marketing Officer",
-      description: "Guardian of Growth, and Influence. Commands marketing strategy, creative direction, and public image.Designs campaigns that dominate attention, expand market reach, and forge unshakable client loyalty.The shield and spear of M Company’s influence in every arena."
+      description: "Guardian of Growth, and Influence. Commands marketing strategy, creative direction, and public image.Designs campaigns that dominate attention, expand market reach, and forge unshakable client loyalty.The shield and spear of M Company's influence in every arena."
     },
     "CCO": {
       title: "Chief Creative Officer",
-      description: "Architect of vision, branding and storytelling. Leads design, media, and creative direction across all channels.Crafts the imagery, campaigns, and experiences that define M Company’s identity and capture the imagination of markets.",
+      description: "Architect of vision, branding and storytelling. Leads design, media, and creative direction across all channels.Crafts the imagery, campaigns, and experiences that define M Company's identity and capture the imagination of markets.",
     },
     "CAO": {
       title: "Chief Academy Officer",
@@ -26,15 +26,15 @@ const ChiefOfficers = () => {
     },
     "CSO": {
       title: "Chief Sales Officer",
-      description: "Commander of sales and client growth. Drives market expansion, secures key partnerships, and engineers revenue dominance.Leads the Sales Agents with precision, building unshakable client trust while capturing new territories for M Company’s advance.",
+      description: "Commander of sales and client growth. Drives market expansion, secures key partnerships, and engineers revenue dominance.Leads the Sales Agents with precision, building unshakable client trust while capturing new territories for M Company's advance.",
     },
     "CTO": {
       title: "Chief Technology Officer",
-      description: "Architect of technology and innovation at M Company. Guides the long-term technological vision, ensuring every system, platform, and product is built for scale, security, and dominance.Leads product development and IT infrastructure, while pioneering the innovations that will define the company’s future edge.",
+      description: "Architect of technology and innovation at M Company. Guides the long-term technological vision, ensuring every system, platform, and product is built for scale, security, and dominance.Leads product development and IT infrastructure, while pioneering the innovations that will define the company's future edge.",
     },
     "CFO": {
       title: "Chief Financial Officer",
-      description: "Keeper of Capital and Strategy. Master of financial systems, investments, and risk management.Protects wealth, secures cash flow, and builds the financial architecture that ensures M Company’s long-term dominance.",
+      description: "Keeper of Capital and Strategy. Master of financial systems, investments, and risk management.Protects wealth, secures cash flow, and builds the financial architecture that ensures M Company's long-term dominance.",
     },
     "COO": {
       title: "Chief Operating Officer",
@@ -46,7 +46,7 @@ const ChiefOfficers = () => {
     },
     "Falco CEO": {
       title: "Chief Executive Officer",
-      description: "Leads Falco, M Company’s experimental and future-focused division.Responsible for scouting, shaping, and accelerating next-generation talent, while testing innovative models that later integrate into the core company structure.Acts as the bridge between visionary ideas and practical execution, ensuring M Company stays ahead of the curve.",
+      description: "Leads Falco, M Company's experimental and future-focused division.Responsible for scouting, shaping, and accelerating next-generation talent, while testing innovative models that later integrate into the core company structure.Acts as the bridge between visionary ideas and practical execution, ensuring M Company stays ahead of the curve.",
     },
   }), []);
 
@@ -97,7 +97,41 @@ const ChiefOfficers = () => {
   );
 };
 
+const ImageModal = ({ isOpen, onClose, imageUrl, altText }) => {
+  if (!isOpen) return null;
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="relative max-w-[300px] max-h-[80vh] w-full">
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-black text-3xl hover:text-gray-300 transition"
+        >
+          ✕
+        </button>
+        <img
+          src={imageUrl}
+          alt={altText}
+          className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+        />
+      </div>
+    </div>
+  );
+};
+
 const OfficerCard = ({ officer, professionsData }) => {
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const cardRef = React.useRef(null);
+
   const getProfessionInfo = () => {
     if (officer.profession) {
       if (professionsData[officer.profession]) {
@@ -122,64 +156,104 @@ const OfficerCard = ({ officer, professionsData }) => {
   };
 
   const professionInfo = getProfessionInfo();
-  
 
   return (
-    <div className="flex flex-col justify-between p-4 bg-white rounded-3xl shadow-md hover:shadow-xl transition duration-300 w-full max-w-[300px] mx-auto h-full">
-      <div className="flex flex-col items-center text-center">
-        <img
-          loading="lazy"
-          src={officer.profile_picture || "https://via.placeholder.com/150"}
-          alt="Officer"
-          className="w-28 h-28 rounded-full object-cover mb-3 border-2 border-gray-200"
-        />
-        <p className="text-sm text-gray-500 h-5 overflow-hidden">
-          {officer.profession ? `${officer.profession}` : "Chief Officer"}
-        </p>
-        
-        <p className="text-lg font-bold h-6 overflow-hidden">
-          {professionInfo.title}
-        </p>
-      </div>
-
-      <div className="mt-5">
-        <p className="font-semibold truncate">Name: {officer.full_name || "Unknown"}</p>
-        <p className="text-gray-600 text-sm">
-          Phone: {officer.phone_number || "Not provided"}
-        </p>
-      </div>
-
-  <div className="text-sm text-gray-700 mt-3 space-y-1">
-  {professionInfo.description
-    .split(".")
-    .filter((sentence) => sentence.trim() !== "")
-    .map((sentence, index) => (
-      <p key={index}>{sentence.trim()}.</p>
-    ))}
-</div>
-
-
-      <a
-        href={
-          officer.tg_username
-            ? `https://t.me/${officer.tg_username.replace(/^@/, "")}`
-            : "#"
-        }
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex items-center justify-center gap-2 px-5 py-2 mt-4 border border-gray-300 bg-gray-100 rounded-lg text-gray-600 font-medium hover:border-blue-300 hover:bg-white hover:text-blue-600 transition w-full"
+    <>
+      <div 
+        ref={cardRef}
+        className="flex flex-col justify-between p-4 bg-white rounded-3xl shadow-md hover:shadow-xl transition duration-300 w-full max-w-[300px] mx-auto h-full"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 240 240"
-          className="w-4 h-4 fill-gray-600 group-hover:fill-blue-600 transition"
+        <div className="flex flex-col items-center text-center">
+          <div 
+            className="relative w-28 h-28 mb-3 group cursor-pointer"
+            onClick={() => setIsImageModalOpen(true)}
+          >
+            <img
+              loading="lazy"
+              src={officer.profile_picture || "https://via.placeholder.com/150"}
+              alt="Officer"
+              className="w-full h-full rounded-full object-cover border-2 border-gray-200 transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-8 h-8 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-500 h-5 overflow-hidden">
+            {officer.profession ? `${officer.profession}` : "Chief Officer"}
+          </p>
+          
+          <p className="text-lg font-bold h-6 overflow-hidden">
+            {professionInfo.title}
+          </p>
+        </div>
+
+        <div className="mt-5">
+          <p className="font-semibold truncate">Name: {officer.full_name || "Unknown"}</p>
+          <p className="text-gray-600 text-sm">
+            Phone: {officer.phone_number || "Not provided"}
+          </p>
+        </div>
+
+        <div className="text-sm text-gray-700 mt-3 space-y-1">
+          {professionInfo.description
+            .split(".")
+            .filter((sentence) => sentence.trim() !== "")
+            .map((sentence, index) => (
+              <p key={index}>{sentence.trim()}.</p>
+            ))}
+        </div>
+
+        <a
+          href={
+            officer.tg_username
+              ? `https://t.me/${officer.tg_username.replace(/^@/, "")}`
+              : "#"
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center justify-center gap-2 px-5 py-2 mt-4 border border-gray-300 bg-gray-100 rounded-lg text-gray-600 font-medium hover:border-blue-300 hover:bg-white hover:text-blue-600 transition w-full"
         >
-          <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.6 79.2l-17.4 82.2c-1.3 5.9-4.8 7.4-9.7 4.6l-26.8-19.8-12.9 12.4c-1.4 1.4-2.6 2.6-5.3 2.6l1.9-27.1 49.4-44.6c2.2-1.9-.5-3-3.4-1.1l-61 38.4-26.3-8.2c-5.7-1.8-5.8-5.7 1.2-8.4l102.6-39.6c4.7-1.7 8.8 1.1 7.3 8.6z" />
-        </svg>
-        <span>Message {officer.profession ? `${officer.profession}` : "Chief Officer"} </span>
-      </a>
-    </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 240 240"
+            className="w-4 h-4 fill-gray-600 group-hover:fill-blue-600 transition"
+          >
+            <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm57.6 79.2l-17.4 82.2c-1.3 5.9-4.8 7.4-9.7 4.6l-26.8-19.8-12.9 12.4c-1.4 1.4-2.6 2.6-5.3 2.6l1.9-27.1 49.4-44.6c2.2-1.9-.5-3-3.4-1.1l-61 38.4-26.3-8.2c-5.7-1.8-5.8-5.7 1.2-8.4l102.6-39.6c4.7-1.7 8.8 1.1 7.3 8.6z" />
+          </svg>
+          <span>Message {officer.profession ? `${officer.profession}` : "Chief Officer"} </span>
+        </a>
+      </div>
+
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={officer.profile_picture || "https://via.placeholder.com/150"}
+        altText={`${officer.full_name || "Officer"} profile picture`}
+        cardRef={cardRef.current}
+      />
+    </>
   );
 };
 
 export default ChiefOfficers;
+

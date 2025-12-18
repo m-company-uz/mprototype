@@ -16,6 +16,7 @@ import {
   toLocalDateInputValue,
   fromLocalDateInputValue,
 } from "../../utils/dateUtils";
+import { useAuth } from "../../hooks/useAuth";
 const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -32,28 +33,42 @@ const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
   }, [event]);
 
   // Fetch departments when modal opens for editing
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const departments = await getDepartments();
-        setAvailableDepartments(
-          departments.map((dept) => ({
-            id: dept.id,
-            name: dept.name,
-            avatar: dept.photo || "/default-avatar.png",
-            description: dept.description,
-            head: dept.head,
-          }))
-        );
-      } catch (error) {
-        console.error("Failed to fetch departments:", error);
-      }
-    };
+const { user } = useAuth();
+const isDepartmentRestricted = user?.role === 'dep_manager' || user?.role === 'heads';
 
-    if (isOpen && isEditing) {
-      fetchDepartments();
+// 57-qatordan boshlab mavjud fetchDepartments useEffect ni almashtiring:
+useEffect(() => {
+  const fetchDepartments = async () => {
+    try {
+      const departments = await getDepartments();
+      const departmentsData = departments.map((dept) => ({
+        id: dept.id,
+        name: dept.name,
+        avatar: dept.photo || "/default-avatar.png",
+        description: dept.description,
+        head: dept.head,
+      }));
+
+      // Bo'lim cheklash logikasi
+      if (isDepartmentRestricted) {
+        const userDepartmentId = user.department?.id || user.department;
+        const userDepartment = departmentsData.find(dept => dept.id === userDepartmentId);
+        
+        if (userDepartment) {
+          setAvailableDepartments([userDepartment]);
+        }
+      } else {
+        setAvailableDepartments(departmentsData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch departments:", error);
     }
-  }, [isOpen, isEditing]);
+  };
+
+  if (isOpen && isEditing) {
+    fetchDepartments();
+  }
+}, [isOpen, isEditing, isDepartmentRestricted, user]);
 
   const handleEditClick = () => setIsEditing(true);
 
@@ -98,8 +113,8 @@ const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
   if (!displayData) return null;
 
   return (
-    <div className="fixed inset-0  bg-[#0D1B42]/40 backdrop-blur-xs flex items-center justify-center z-50 px-5">
-      <div className="relative bg-white rounded-2xl max-w-2xl w-full">
+    <div  onClick={onClose} className="fixed inset-0  bg-[#0D1B42]/40 backdrop-blur-xs flex items-center justify-center z-50 px-5">
+      <div  onClick={(e) => e.stopPropagation()} className="relative bg-white rounded-2xl max-w-2xl w-full">
         <div className="p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold w-full">
@@ -447,15 +462,15 @@ const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
                       className="w-full pr-9 p-3 max-sm:pr-8 max-sm:text-sm border border-gray-300 rounded-[14px] appearance-none"
                     >
                       <option value="">No notification</option>
-                      <option value="5 minutes before">5 minutes before</option>
-                      <option value="15 minutes before">
-                        15 minutes before
-                      </option>
-                      <option value="30 minutes before">
-                        30 minutes before
-                      </option>
+                      <option value="Now">Now</option>
                       <option value="1 hour before">1 hour before</option>
+                      <option value="3 hour before">3 hour before</option>
+                      <option value="6 hour before">6 hour before</option>
+                      <option value="12 hour before">12 hour before</option>
                       <option value="1 day before">1 day before</option>
+                      <option value="1.5 day before">1.5 day before</option>
+                      <option value="2 day before">2 day before</option>
+                      <option value="4 day before">4 day before</option>
                     </select>
                     <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                       <ChevronDown className="w-4 h-4" />
@@ -531,7 +546,7 @@ const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
               </>
             ) : (
               <>
-                <Permission anyOf={[ROLES.FOUNDER, ROLES.MANAGER, ROLES.HEADS]}>
+                <Permission anyOf={[ROLES.FOUNDER, ROLES.MANAGER, ROLES.HEADS, ROLES.DEP_MANAGER]}>
                   <button
                     onClick={handleEditClick}
                     className="px-5 py-2  max-[420px]:px-3  max-[420px]:py-2 max-sm:text-sm text-gray-700 border border-gray-300 rounded-[14px] hover:bg-gray-50 flex items-center space-x-2"
@@ -540,7 +555,7 @@ const EventDetailsModal = ({ isOpen, onClose, event, onEdit, onDelete }) => {
                     <Edit2 className="w-4 h-4" />
                   </button>
                 </Permission>
-                <Permission anyOf={[ROLES.FOUNDER, ROLES.MANAGER, ROLES.HEADS]}>
+                <Permission anyOf={[ROLES.FOUNDER, ROLES.MANAGER, ROLES.HEADS, ROLES.DEP_MANAGER]}>
                   <button
                     onClick={handleDeleteClick}
                     className="px-5 py-2 max-[420px]:px-3  max-[420px]:py-2 max-sm:text-sm text-red-600 border border-red-300 rounded-[14px] hover:bg-red-50 flex items-center space-x-2"

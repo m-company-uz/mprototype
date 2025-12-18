@@ -66,17 +66,21 @@ import {
 import { ArrowBigUpDashIcon } from "lucide-react";
 import { ChevronDown } from "lucide-react";
 import { ChevronUp } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const NotionKanban = ({ cards, setCards, assignees, getAssigneeName }) => {
   return (
-    <div className="flex gap-5 absolute top-0 right-0 left-0 pb-4 w-full overflow-x-auto hide-scrollbar">
-      <Board
-        cards={cards}
-        setCards={setCards}
-        assignees={assignees}
-        getAssigneeName={getAssigneeName}
-      />
-      {/* <Board cards={cards} setCards={setCards} /> */}
+    <div className="flex flex-col gap-5 relative">
+      
+
+      <div className="flex gap-5 mt-[20px] w-full overflow-x-auto hide-scrollbar">
+        <Board
+          cards={cards}
+          setCards={setCards}
+          assignees={assignees}
+          getAssigneeName={getAssigneeName}
+        />
+      </div>
     </div>
   );
 };
@@ -1529,46 +1533,51 @@ const closeImageModal = () => {
                   <div className="w-full max-w-5/6 sm:w-[140px] sm:h-[140px] bg-gray-200 flex items-center justify-center rounded-xl">
                    <span role="img" aria-label="image" className="text-4xl">
                     {taskData?.task_image ? (
-              <img
-  src={taskData.task_image}
-  alt="task image"
-  onError={(e) => (e.currentTarget.style.display = "none")}
-  className="rounded-xl cursor-pointer hover:opacity-80 transition-opacity duration-200 w-full h-full object-cover"
-  onClick={(e) => {
-    e.stopPropagation();
-    openImageModal(); // openModal o'rniga
-  }}
-/>
-            ) : (
-              <span>🖼️</span>
-            )}
+                        <img
+                          src={taskData.task_image}
+                          alt="task image"
+                          onError={(e) => (e.currentTarget.style.display = "none")}
+                          className="rounded-xl cursor-pointer hover:opacity-80 transition-opacity duration-200 w-full h-[140px] object-cover"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openImageModal(); // openModal o'rniga
+                          }}
+                        />
+                          ) : (
+                            <span>🖼️</span>
+                          )}
                   </span>
                   </div>
                   <div className="flex-1 text-sm text-gray-700 leading-6 whitespace-pre-wrap">
                     {taskData.description || "No description available"}
                   </div>
                 </div>
-               {isImageModalOpen && ( // isModalOpen o'rniga
-  <div
-    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-    onClick={closeImageModal} // closeModal o'rniga
-  >
-    <div className="relative max-w-4xl max-h-full">
-      <button
-        onClick={closeImageModal} // closeModal o'rniga
-        className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
-      >
-        <X size={32} />
-      </button>
-      <img
-        src={taskData.task_image}
-        alt="task image enlarged"
-        className="max-w-full max-h-[90vh] object-contain rounded-lg"
-        onClick={(e) => e.stopPropagation()}
-      />
-          </div>
-        </div>
-      )}
+       {isImageModalOpen && (
+              <div
+                className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen  backdrop-blur-sm flex items-center justify-center z-99999 p-4"
+                onClick={closeImageModal}
+                role="dialog"
+                aria-modal="true"
+              >
+                <div className="relative max-w-4xl max-h-full">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); closeImageModal(); }}
+                    aria-label="Close"
+                    className="absolute top-2 right-2 z-50 p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition"
+                  >
+                    <X size={28} />
+                  </button>
+
+                  <img
+                    src={taskData.task_image}
+                    alt="task image enlarged"
+                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-lg"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+            )}
+
                 {/* Files */}
                 <div>
                   <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
@@ -1584,7 +1593,7 @@ const closeImageModal = () => {
                       </span>
                     </div>
                   ) : files.length > 0 ? (
-                    <div className="space-y-2 max-w-sm">
+                    <div className="space-y-2  w-full ">
                       {/* Files list */}
                       <div
                         className={`space-y-2 overflow-hidden transition-all duration-300 ${
@@ -1595,7 +1604,7 @@ const closeImageModal = () => {
                           (file, index) => (
                             <div
                               key={file.id || index}
-                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
+                              className="flex items-center w-full justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-200 transition-colors"
                             >
                               <div className="flex items-center gap-3 flex-1 min-w-0">
                                 {/* File type icon */}
@@ -1871,9 +1880,9 @@ const closeImageModal = () => {
                       </div>
 
                       {!showAllChecklist && checklistItems.length > 4 && (
-                        <div className="text-center pt-2 border-t border-gray-100">
-                          <span className="text-xs text-gray-400">
-                            ... and {checklistItems.length - 4} more items
+                        <div onClick={() => setShowAllChecklist(!showAllChecklist)} className=" cursor-pointer text-center pt-2 border-t border-gray-100">
+                          <span className="text-xs text-blue-400">
+                            ... and {checklistItems.length - 4} more items 
                           </span>
                         </div>
                       )}
@@ -2125,7 +2134,7 @@ const closeImageModal = () => {
 
                 {/* Assignee */}
                 <div>
-                  <p className="text-gray-400">Assignee by</p>
+                  <p className="text-gray-400">Assigned to</p>
 
                   <div className="flex items-center gap-2 mt-1">
                     {(() => {
@@ -2512,7 +2521,7 @@ const EditCardModal = ({ visible, onClose, cardData, onUpdate }) => {
     try {
       const response = await getTaskInstructions(taskId);
       // faqat shu taskga tegishli instructions qolsin
-      const instructionsData = (response.results || []).filter(
+      const instructionsData = (response.data?.results || []).filter(
         (instruction) => instruction.task === taskId
       );
       console.log("Instructions ma'lumotlari:", response);

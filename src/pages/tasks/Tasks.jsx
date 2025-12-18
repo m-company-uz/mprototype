@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { message, Modal, Input, Dropdown, Pagination, Drawer, Select, DatePicker, Slider } from "antd";
-import { Archive, Filter, MoreVertical, Paperclip, Search, ChevronDown } from "lucide-react";
+import { Archive, Filter, MoreVertical, Paperclip, Search, ChevronDown, X } from "lucide-react";
 import pencil from "../../assets/icons/pencil.svg";
 import info from "../../assets/icons/info.svg";
 import trash from "../../assets/icons/trash.svg";
@@ -368,14 +368,68 @@ const Projects = () => {
     const filters = getAPIFilters();
     loadProjects(1, filters);
     setIsFilterModalOpen(false);
-  };
+  }; 
 
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-[100vh]">
-        <span className="loader"></span>
+  // ProjectLoadingSkeleton component
+const ProjectLoadingSkeleton = ({ count = 8 }) => {
+  const skeletonCards = Array.from({ length: count }, (_, index) => (
+    <div
+      key={index}
+      className="border-2 border-[#EFEFEF] rounded-[14px] p-3 bg-white relative group flex flex-col gap-3 animate-pulse"
+    >
+      {/* Image skeleton */}
+      <div className="h-[134px] w-full rounded-[14px] bg-gray-200"></div>
+      
+      {/* Progress bar skeleton */}
+      <div className="flex items-center gap-1 mb-2">
+        <div className="w-8 h-4 bg-gray-200 rounded"></div>
+        <div className="flex-1 h-2 bg-gray-200 rounded">
+          <div className="h-full bg-gray-300 rounded w-1/3"></div>
+        </div>
       </div>
-    );
+      
+      {/* Title and department section */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 flex-1 min-w-0">
+          {/* Department avatars skeleton */}
+          <div className="flex items-center relative w-auto h-8 flex-shrink-0">
+            <div className="flex items-center -space-x-2">
+              <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white shadow-sm"></div>
+              <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white shadow-sm"></div>
+            </div>
+          </div>
+          
+          {/* Project title skeleton */}
+          <div className="font-bold ml-3 text-lg flex-1">
+            <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        </div>
+        
+        {/* More options skeleton */}
+        <div className="flex-shrink-0 p-1">
+          <div className="w-5 h-5 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+      
+      {/* Dates skeleton */}
+      <div className="flex mt-1 justify-between text-sm gap-2">
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div className="flex-1 text-right">
+          <div className="h-4 bg-gray-200 rounded w-16 ml-auto"></div>
+        </div>
+      </div>
+    </div>
+  ));
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 space-y-2">
+      {skeletonCards}
+    </div>
+  );
+};
+
 
   const handleAddOpen = () => setIsAddModalOpen(true);
 
@@ -402,13 +456,16 @@ const Projects = () => {
       setDescription(task.description || "");
       setSelectedImage(task.image || null);
 
+      // FIXED: Captain initialization - simplified
+      let captainId = null;
       if (task.captain) {
-        // Agar captain object bo'lsa, undan ID ni olamiz
-        const captainId = typeof task.captain === 'object' ? task.captain.id : task.captain;
-        setSelectedCaptainName([captainId]);
-      } else {
-        setSelectedCaptainName([]);
+        if (typeof task.captain === 'string') {
+          captainId = task.captain;
+        } else if (typeof task.captain === 'object' && task.captain.id) {
+          captainId = task.captain.id;
+        }
       }
+      setSelectedCaptainName(captainId ? [captainId] : []);
 
       if (task.deadline) {
         const deadlineDate = new Date(task.deadline);
@@ -469,6 +526,7 @@ const Projects = () => {
 
   const renderAssignedUsers = () => {
     if (modalType !== "edit" || !selectedTask?.assigned) return null;
+
 
     return (
       <div className="mb-4">
@@ -670,11 +728,24 @@ const Projects = () => {
 
       if (deadline) {
         formData.append("deadline", deadline);
+      } else if (selectedTask.deadline && !deadline) {
+        formData.append("deadline", "");
       }
 
-      if (selectedCaptainName.length > 0) {
-        formData.append("captain", selectedCaptainName[0]);
+      // UPDATED: Only send captain data if user made a change
+      const captainSection = document.getElementById('captain-selection-section');
+      const captainSectionVisible = captainSection && captainSection.style.display !== 'none';
+
+      // If captain section was shown (user wanted to change) or there was no original captain
+      if (captainSectionVisible || !selectedTask.captain) {
+        if (selectedCaptainName.length > 0) {
+          formData.append("captain", selectedCaptainName[0]);
+        } else {
+          // User explicitly selected "No Captain"
+          formData.append("captain", "");
+        }
       }
+      // If captain section was hidden, don't send captain field (keep existing)
 
       const isAllDepartmentsSelected = selectedDepartments.includes("all") ||
         (selectedDepartments.length === allDepartments.length && !selectedDepartments.includes("none"));
@@ -693,8 +764,7 @@ const Projects = () => {
         });
       }
 
-      const allSelectedUserIds = [...new Set([...selectedUsers])];
-      allSelectedUserIds.forEach((id) => formData.append("assigned", id));
+      selectedUsers.forEach((id) => formData.append("assigned", id));
 
       if (imageFile) {
         formData.append("image", imageFile);
@@ -705,13 +775,8 @@ const Projects = () => {
 
       await loadProjects(currentPage);
       handleActionClose();
-
-      console.log("Captain data:", selectedCaptainName);
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
     } catch (error) {
+      console.error("Error details:", error.response?.data);
       const backendMessage =
         error.response?.data?.message ||
         error.response?.data?.detail ||
@@ -963,7 +1028,6 @@ const Projects = () => {
                         key={user.id}
                         className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded"
                       >
-                        {/* Radio button ishlatamiz, checkbox emas */}
                         <input
                           type="radio"
                           name="captain"
@@ -1194,7 +1258,7 @@ const Projects = () => {
   const getModalTitle = () => {
     switch (modalType) {
       case "edit":
-        return "Edit Project";
+        return "Edit Projects";
       case "delete":
         return "Delete Project";
       default:
@@ -1288,17 +1352,25 @@ const Projects = () => {
           </Permission>
         </div>
       </div>
-
       {/* Filter Modal */}
       <div className="">
         <Drawer
-          title="Filter Projects"
-          placement="right"
-          onClose={() => setIsFilterModalOpen(false)}
-          open={isFilterModalOpen}
-          width={400}    // margin o'rniga top bilan boshqar
-          className="Drawer"
+            title="Filter Projects"
+            placement="right"
+            onClose={() => setIsFilterModalOpen(false)}
+            open={isFilterModalOpen}
+            width={400}
+            className="Drawer"
+            closable={false}
+           
         >
+          <button
+          onClick={() => setIsFilterModalOpen(false)}
+          aria-label="Close"
+          className="absolute top-3 right-4 z-50 p-2 rounded-md hover:bg-gray-100"
+        >
+          <X size={18} />
+        </button>
           <div className="space-y-6 ">
             {/* Name Filter */}
             <div>
@@ -1394,7 +1466,7 @@ const Projects = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 mt-8">
+            <div className="flex gap-2 mt-64">
               <button
                 className="flex-1 py-2 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300"
                 onClick={resetFilters}
@@ -1412,9 +1484,13 @@ const Projects = () => {
         </Drawer>
       </div>
       {/* Tasks Grid - Responsive Grid Layout */}
+      {isLoading ? (
+     <ProjectLoadingSkeleton count={projectsData.results.length } />
+     ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 space-y-2" >
         {displayProjects.length > 0 ? (
           displayProjects.map((project) => (
+            
             <div
               key={project.id}
               className="border-2 border-[#EFEFEF] rounded-[14px] p-3 bg-white relative group flex flex-col gap-3 cursor-pointer hover:shadow-lg transition-shadow duration-200"
@@ -1590,7 +1666,7 @@ const Projects = () => {
           </div>
         )}
       </div>
-
+     )}
       {/* Pagination */}
       {projectsData.count > pageSize && !isFilterActive && (
         <div className="flex justify-center mt-10 mb-10">
@@ -1799,40 +1875,78 @@ const Projects = () => {
                   Captain (only one)
                 </label>
                 {selectedDepartments.length > 0 && filteredUsers.length > 0 && (
-                  <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-[14px] p-3 mt-2">
-                    {filteredUsers.map((user) => (
-                      <label
-                        key={user.id}
-                        className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded"
-                      >
-                        {/* Radio button ishlatamiz, checkbox emas */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-[14px] font-bold text-[#7D8592]">
+                        {selectedTask?.captain ? "Change Captain (Optional)" : "Select Captain (Optional)"}
+                      </label>
+                      {selectedTask?.captain && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Toggle captain selection visibility
+                            const captainSection = document.getElementById('captain-selection-section');
+                            if (captainSection) {
+                              captainSection.style.display = captainSection.style.display === 'none' ? 'block' : 'none';
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          {document.getElementById('captain-selection-section')?.style.display === 'none' ? 'Change Captain' : 'Cancel Change'}
+                        </button>
+                      )}
+                    </div>
+
+                    <div
+                      id="captain-selection-section"
+                      style={{ display: selectedTask?.captain ? 'none' : 'block' }}
+                      className="max-h-40 overflow-y-auto border border-gray-300 rounded-[14px] p-3"
+                    >
+                      {/* Add "No Captain" option */}
+                      <label className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded">
                         <input
                           type="radio"
                           name="captain"
-                          checked={selectedCaptainName.includes(user.id)}
-                          onChange={() => toggleCaptainSelection(user.id)}
+                          checked={selectedCaptainName.length === 0}
+                          onChange={() => setSelectedCaptainName([])}
                           className="w-4 h-4 accent-blue-600"
                         />
-                        <div className="flex items-center gap-2">
-                          {user.profile_picture ? (
-                            <img
-                              src={user.profile_picture}
-                              alt={`${user.first_name} ${user.last_name}`}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-xs font-medium">
-                                {user.first_name?.[0] || "U"}
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-sm font-medium">
-                            {user.first_name} {user.last_name}
-                          </span>
-                        </div>
+                        <span className="text-sm font-medium text-gray-600">No Captain</span>
                       </label>
-                    ))}
+
+                      {filteredUsers.map((user) => (
+                        <label
+                          key={user.id}
+                          className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded"
+                        >
+                          <input
+                            type="radio"
+                            name="captain"
+                            checked={selectedCaptainName.includes(user.id)}
+                            onChange={() => toggleCaptainSelection(user.id)}
+                            className="w-4 h-4 accent-blue-600"
+                          />
+                          <div className="flex items-center gap-2">
+                            {user.profile_picture ? (
+                              <img
+                                src={user.profile_picture}
+                                alt={`${user.first_name} ${user.last_name}`}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-medium">
+                                  {user.first_name?.[0] || "U"}
+                                </span>
+                              </div>
+                            )}
+                            <span className="text-sm font-medium">
+                              {user.first_name} {user.last_name}
+                            </span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {selectedCaptainName.length > 0 && (

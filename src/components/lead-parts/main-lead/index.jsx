@@ -170,7 +170,7 @@ const resetFilters = () => {
         console.log("Leads response:", leadsRes.data);
 
         // Groups ni format qilish
-        const formattedGroups = groupsRes.data || []
+        const formattedGroups = (groupsRes.data || [])
           .filter((group) => group.board === boardId)
           .map((group) => ({
             id: group.id,
@@ -526,7 +526,7 @@ const resetFilters = () => {
   };
 
   // Item tanlash/bekor qilish
-  const toggleSelectItem = (groupId, isSelected, leadId) => {
+  const toggleSelectItem = (groupId, itemIndex, isSelected, leadId) => {
     if (isSelected) {
       setSelectedItems((prev) => [...prev, { groupId,leadId }]);
     } else {
@@ -786,7 +786,7 @@ useEffect(() => {
           groups
           .map((group) => {
             const groupId = group.id; // BU QATORNI QOSHISH KERAK
-            const groupTitle = String(group.title || "Untitled Group"); // BU HAM
+            const groupTitle = String(group.title  || "Untitled Group"); // BU HAM
             
             const groupLeads = getFilteredLeads(groupId);
               
@@ -868,8 +868,6 @@ useEffect(() => {
                         expanded={true}
                         onToggleExpanded={() => {}}
                         updateTitle={updateGroupTitle}
-                        // addItem={addItemToGroup}
-                        // updateItem={updateItemInGroup}
                         deleteItem={deleteItemFromGroup}
                         deleteGroup={handleDeleteGroup}
                         boardId={boardId}
