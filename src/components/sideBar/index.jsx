@@ -35,6 +35,7 @@ const menuItems = [
   { label: "M Library", icon: <IoLibrary size={20} />, path: "/library" },
   { label: "Reports", icon: <TbReport size={20} />, path: "/reports" },
   { label: "Archive", icon: <IoFileTrayFull size={20} />, path: "/archive" },
+  { label: "Attandance", icon: <IoFileTrayFull size={20} />, path: "/attendance" },
 ];
 
 const SideBar = ({ isMobileOpen, setIsMobileOpen }) => {
@@ -88,7 +89,7 @@ const SideBar = ({ isMobileOpen, setIsMobileOpen }) => {
       >
         <div className="w-full h-full bg-white rounded-[24px] shadow-xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex-shrink-0 mb-[5px]">
+          <div className="flex-shrink-0">
             <div
               onClick={handleLogoClick}
               className={`flex justify-center gap-[5px] items-center transition-all duration-300 cursor-pointer ${
@@ -109,13 +110,9 @@ const SideBar = ({ isMobileOpen, setIsMobileOpen }) => {
           {/* Navigation */}
           <div className="flex-1 overflow-hidden">
             <nav
-              className={`flex gap-1 flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent hover:scrollbar-thumb-gray-300 transition-colors duration-200 ${
+              className={`flex gap-1 flex-col h-full overflow-y-auto hide-scrollbar transition-colors duration-200 ${
                 collapsed ? "px-2 py-2" : "px-4 py-2"
               }`}
-              style={{
-                scrollbarWidth: "thin",
-                scrollbarColor: "rgba(156, 163, 175, 0.5) transparent",
-              }}
             >
               {menuItems.map((item) => {
                 let active = false;

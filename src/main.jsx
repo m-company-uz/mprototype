@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+// import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
 import "@ant-design/v5-patch-for-react-19";
@@ -25,7 +25,7 @@ root.render(
       >
         <AuthProvider>
           <RouterProvider router={router} />
-          <Toaster
+          {/* <Toaster
             position="top-center"
             toastOptions={{
               duration: 5000,
@@ -64,7 +64,7 @@ root.render(
                 },
               },
             }}
-          />
+          /> */}
         </AuthProvider>
       </ConfigProvider>
     </HelmetProvider>
