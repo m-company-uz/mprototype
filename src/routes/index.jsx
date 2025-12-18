@@ -7,6 +7,7 @@ import AppLayout from "../components/home";
 
 import Tasks from "../pages/tasks/Tasks";
 import Employees from "../pages/employees/InnerCircle";
+import Attendance from "../pages/attendance";
 import Messenger from "../pages/messenger";
 import Departments from "../pages/departments";
 import Calendar from "../pages/calendar";
@@ -27,6 +28,16 @@ import CategoryCard from "../components/m-library/CategoryCard";
 import LeadSide from "../components/lead-parts/leads-side";
 import LeadsRight from "../components/lead-parts/leads-right";
 
+import Dashboard from "../components/department-parts/dashboard";
+import Notify from "../components/department-parts/notify";
+import Team from "../components/department-parts/team";
+import Recognition from "../components/department-parts/recognition";
+import KnowladgeHub from "../components/department-parts/knowladge-hub";
+import ArchiveTasks from "../components/archive/archive-tasks";
+import ArchiveLibrary from "../components/archive/archive-library";
+import ArchiveLeads from "../components/archive/archive-leads";
+import ArchiveReports from "../components/archive/archive-reports";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -37,8 +48,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: "", element: <Home /> },
-          { path: "tasks", element: <Tasks />, },
-          { path: "tasks/:projectId", element: <TaskDetails />, },
+          { path: "tasks", element: <Tasks /> },
+          { path: "tasks/:projectId", element: <TaskDetails /> },
 
           { path: "customers", element: <Customers /> },
           { path: "employees", element: <Employees /> },
@@ -54,13 +65,24 @@ export const router = createBrowserRouter([
           { path: "category/:id", element: <CategoryDetailsPage /> },
           { path: "library/folders/:id", element: <CategoryCard /> },
 
-
           { path: "archive", element: <Archive /> },
           { path: "activity", element: <Activity /> },
           { path: "profile/:id", element: <Profile /> },
           { path: "settings", element: <Settings /> },
           { path: "main-profile", element: <MainProfile /> },
           { path: "notification", element: <Notification /> },
+          { path: "attendance", element: <Attendance /> },
+
+          { path: "/departments/dashboard", element: <Dashboard /> },
+          { path: "/departments/notifier", element: <Notify /> },
+          { path: "/departments/team", element: <Team /> },
+          { path: "/departments/recognition", element: <Recognition /> },
+          { path: "/departments/knowledge", element: <KnowladgeHub /> },
+
+          { path: "/archive/tasks", element: <ArchiveTasks /> },
+          { path: "/archive/m-library", element: <ArchiveLibrary /> },
+          {path : "/archive/leads", element: <ArchiveLeads />},
+          {path : "/archive/reports", element: <ArchiveReports/>},
         ],
       },
     ],
